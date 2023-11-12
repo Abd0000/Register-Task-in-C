@@ -7,7 +7,10 @@
 struct User {
   char username[50];
   char password[50];
-  bool isLoggedIn;
+  union {
+    bool isLoggedIn;
+    bool isActive;
+  };
 };
 
 struct User users[MAX_USERS];
@@ -22,8 +25,9 @@ void registerUser() {
 
   char username[50];
   char password[50];
+  bool isActive;
 
-  printf("Enter a username : ");
+  printf("Enter a username: ");
   scanf("%s", username);
 
   // Check for duplicate usernames
@@ -34,12 +38,18 @@ void registerUser() {
     }
   }
 
-  printf("Enter a password : ");
+  printf("Enter a password: ");
   scanf("%s", password);
+
+  int tempActive;
+  printf("Choose user state (1 for active, 0 for inactive): ");
+  scanf("%d", &tempActive);
+  isActive = tempActive != 0; // Convert to boolean
+
 
   strcpy(users[numUsers].username, username);
   strcpy(users[numUsers].password, password);
-  users[numUsers].isLoggedIn = false;
+  users[numUsers].isActive = isActive;
 
   printf("Registration successful!\n");
   numUsers++;
@@ -59,8 +69,12 @@ void loginUser() {
   for (int i = 0; i < numUsers; i++) {
     if (strcmp(username, users[i].username) == 0 &&
         strcmp(password, users[i].password) == 0) {
-      users[i].isLoggedIn = true;
-      printf("Login successful!\n");
+      if (users[i].isActive) {
+        users[i].isLoggedIn = true;
+        printf("Login successful!\n");
+      } else {
+        printf("Login failed. User is inactive.\n");
+      }
       return;
     }
   }
@@ -104,10 +118,8 @@ int main() {
       registerUser();
     else if (ans == 2)
       loginUser();
-
     else if (ans == 3)
       logoutUser();
-
     else if (ans == 4) {
       printf("Goodbye!\n");
       return 0;
